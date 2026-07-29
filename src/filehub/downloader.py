@@ -11,6 +11,7 @@ from rich.progress import TaskID
 from filehub.colors import BRIGHT_GREEN, BRIGHT_YELLOW, RESET
 from filehub.errors import handle_client_error
 from filehub.progress import download_progress, fetch_progress
+from filehub.utils import parse_gist_url
 
 
 def process_request_url(
@@ -218,6 +219,48 @@ def download_zip(repo_info: dict, download_path: Path) -> None:
             download_progress.console.log(
                 f"Downloaded {repo_info['repository']} to [bold][yellow]{path}."
             )
+
+    except httpx.HTTPError as e:
+        handle_client_error(e)
+        sys.exit(1)
+
+
+def get_gist(url: str) -> dict[str, str]:
+    gist_id = parse_gist_url(url)
+    req = f"https://api.github.com/gists/{gist_id}"
+    try:
+        with httpx.Client(follow_redirects=True) as client:
+            res = client.get(req)
+            res.raise_for_status()
+            gist = res.json()
+            file_name = list(gist["files"].keys())
+            raw_url = gist["files"][file_name[0]]["raw_url"]
+            return {"file": file_name[0], "raw_url": raw_url}
+
+    except httpx.HTTPError as e:
+        handle_client_error(e)
+        sys.exit(1)
+
+
+def download_gist(url: str, download_path: Path):
+    gist = get_gist(url)
+    file_name = gist["file"]
+    raw_url = gist["raw_url"]
+    path = download_path / file_name
+
+    if path.exists():
+        print(f"{file_name} already exists at {BRIGHT_YELLOW}{download_path}/{RESET}")
+        sys.exit(1)
+
+    try:
+        with fetch_progress:
+            fetch_task = fetch_progress.add_task(description="Downloading gist")
+            response = httpx.get(raw_url).text
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(response)
+
+            fetch_progress.update(fetch_task, visible=False)
+            print(f"Downloaded {BRIGHT_GREEN}{file_name}{RESET}.")
 
     except httpx.HTTPError as e:
         handle_client_error(e)

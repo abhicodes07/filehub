@@ -3,7 +3,12 @@ from pathlib import Path
 
 import click
 
-from filehub.downloader import download_files, download_zip, get_repository_content
+from filehub.downloader import (
+    download_files,
+    download_gist,
+    download_zip,
+    get_repository_content,
+)
 from filehub.fzf import select_files
 from filehub.utils import (
     check_user_rate_limit,
@@ -96,6 +101,16 @@ def zip(url, branch, info):
         print(e)
 
 
+@main.command()
+@click.argument("url", type=str)
+def gist(url):
+    try:
+        DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        download_gist(url, DOWNLOAD_DIR)
+    except Exception as e:
+        print(e)
+
+
 async def initialize_download(
     url, branch, rate_limit, dir, info, flatten, zip, concurrency
 ):
@@ -112,6 +127,7 @@ async def initialize_download(
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     if zip:
+        DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
         download_zip(repo, DOWNLOAD_DIR)
     else:
         files = await get_repository_content(repo)

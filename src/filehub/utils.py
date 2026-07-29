@@ -137,3 +137,11 @@ def parse_repo_url(repo_url: str, branch: str | None = None) -> dict[str, Any]:
         info["branch"] = branch
 
     return info
+
+
+def parse_gist_url(url: str) -> str:
+    validate_url(url)
+    gist_segments = urlsplit(url)
+    gist_id = gist_segments.path.strip().split("/")[-1]
+
+    return gist_id
