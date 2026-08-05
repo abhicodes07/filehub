@@ -6,7 +6,7 @@
 
 The **filehub** is a asynchronous CLI designed for browsing a Github repo, pick files with an interactive `fzf` menu, and download them with concurrent streaming. This is very useful if you have a low bandwidth network or only need a particular file or subdirectory from a large repository. You can also download a whole repository however, it is recommended to use the `git clone` method.
 
-## Featrues
+## Features
 
 - Interactive file selection using fzf
 - Asynchronous / concurrent downloads for speed
@@ -32,6 +32,7 @@ Options:
 Commands:
   fetch
   zip
+  gist
 
 ```
 
