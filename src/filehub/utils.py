@@ -64,7 +64,7 @@ def validate_url(url: str):
     """check if the provided url is Github url"""
     segments = urlsplit(url)
 
-    if segments.netloc not in ("github.com", "gist.github.com"):
+    if segments.netloc not in ("github.com"):
         raise ValueError(f"{url} is not a valid Github URL!")
 
     if segments.scheme not in ("https", "http"):
